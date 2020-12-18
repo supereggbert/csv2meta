@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<title>csv2meta</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;800&display=swap" rel="stylesheet">
+<style>
+body{
+    font-family: 'Open Sans', sans-serif;
+    background-color: #615435;   
+    color: #fff;
+}
+h1{
+    background-color: #ff8216;
+    border-bottom: 7px solid #fff;
+    color: #333;
+    font-weight: 300;
+    margin-top: 0;
+}
+h1 img{
+    vertical-align: middle;
+    margin: 0 20px;
+}
+p{
+    font-size: 18px;
+    padding: 10px;
+    font-weight: 300;
+}
+.container{
+    max-width: 800px;
+    padding: 20px;
+    margin: auto;
+    text-align: center;
+    background-color: rgba(0,0,0,0.1);
+}
+input{
+    display: none;
+}
+label{
+    display: inline-block;
+    padding: 10px 30px;
+    font-size: 20px;
+    font-weight: 600;
+    background-color: #5d844d;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+    border-radius: 5px;
+    cursor: pointer;
+}
+label img{
+    vertical-align: middle;
+    margin-right: 10px;
+}
+label:hover{
+    background-color: #3f7e25;
+}
+label:active{
+    background-color: #7cbf60;
+    box-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+}
+#data{
+    max-width: 100%;
+    margin-top: 30px;
+    display: block;
+}
+</style>
+<body>
+<div class="container">
+<h1><img src="logo.png" alt="">CSV <img src="arrow.png" alt=""> Meta<img src="logo.png" alt=""></h1>
+<h2>Simple csv to metadata XML file converter</h2>
+<p>It assumes the first column is the desired output filename and uses the first row as tags within the metadata file</p>
+<p>Select your CSV file below and it will convert and download a zip file containing the metadata&nbsp;files.</p>
+<label for="file"><img src="upload.png" alt="">Convert CSV File</label>
+<input type="file" id="file">
+</div>
+<script src="js/papaparse.min.js"></script>
+<script src="js/filesaver.js"></script>
+<script src="js/jszip.min.js"></script>
+<script>
+
+var file=document.getElementById("file");
+
+file.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.addEventListener('load', (event) => {
+        var data = Papa.parse(event.target.result, {})
+        console.log(data,event.target.result);
+        
+        var zip = new JSZip();
+        for(let i=1;i<data.data.length;i++){
+            var out = '<?xml version="1.0" encoding="UTF-8"?>\n<oai_dc:dc xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n';
+            for(let j=1;j<data.data[i].length;j++){
+                out+="<"+data.data[0][j]+">"+data.data[i][j]+"</"+data.data[0][j].split(" ")[0]+">\n";
+            }
+            out+="</oai_dc:dc>";
+            zip.file(data.data[i][0]+".metadata", out);
+        }
+
+        zip.generateAsync({type:"blob"})
+        .then(function(content) {
+            saveAs(content, "metadata.zip");
+        });
+
+    });
+    reader.readAsText(file);
+});
+
+</script>
+
+</body>
+</html>
