@@ -83,8 +83,7 @@ file.addEventListener('change', (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.addEventListener('load', (event) => {
-        var data = Papa.parse(event.target.result, {})
-        console.log(data,event.target.result);
+        var data = Papa.parse(event.target.result, {});
         
         var zip = new JSZip();
         for(let i=1;i<data.data.length;i++){
